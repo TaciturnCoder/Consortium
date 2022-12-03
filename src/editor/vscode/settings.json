@@ -8,6 +8,7 @@
         40,
         80
     ],
+    "editor.detectIndentation": false,
     "editor.tabSize": 4,
     "files.autoSave": "afterDelay",
     "files.insertFinalNewline": true,
