@@ -1,0 +1,22 @@
+{
+    "$schema": "https://TaciturnCoder.github.io/Consortium/schema/0.0.1.json",
+    "version": {
+        "revision": 0,
+        "patch": 0,
+        "draft": 1
+    },
+    "config": {
+        "version": {
+            "revision": 0,
+            "patch": 0,
+            "draft": 1
+        },
+        "consortium": ".",
+        "editor": [
+            "vscode"
+        ],
+        "SCM": [
+            "gitignore"
+        ]
+    }
+}
