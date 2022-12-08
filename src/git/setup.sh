@@ -10,10 +10,5 @@
 #//]: # ( See the License for the permissions and limitations.               {c)
 #//]: # ( ------------------------------------------------------------------ {c)
 
-editors=$(cat "$config" | jq -cr ".config.editor | @sh" | tr -d \'\")
-for editor in $editors; do
-    if [ -d "$consortium/src/editor/$editor" ]; then
-        mkdir -p ".$editor"
-        cp -R "$consortium/src/editor/$editor/"* ".$editor/"
-    fi
-done
+cp "$root/src/git/gitattributes" ".gitattributes"
+cp "$root/src/git/gitignore" ".gitignore"

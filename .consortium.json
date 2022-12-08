@@ -3,20 +3,19 @@
     "version": {
         "revision": 0,
         "patch": 0,
-        "draft": 2
+        "draft": 3
     },
-    "config": {
-        "version": {
-            "revision": 0,
-            "patch": 0,
-            "draft": 2
-        },
-        "consortium": ".",
+    "Consortium": {
         "editor": [
             "vscode"
         ],
-        "SCM": [
-            "gitignore"
-        ]
+        "root": "."
+    },
+    "TCsL2H": {
+        "year": 2022,
+        "licensor": {
+            "name": "Dwij Bavisi",
+            "email": "dwijbavisi@gmail.com"
+        }
     }
 }

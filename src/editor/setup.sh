@@ -10,8 +10,10 @@
 #//]: # ( See the License for the permissions and limitations.               {c)
 #//]: # ( ------------------------------------------------------------------ {c)
 
-revision=$(cat "$config" | jq -cr ".version.revision")
-patch=$(cat "$config" | jq -cr ".version.patch")
-draft=$(cat "$config" | jq -cr ".version.draft")
-release=$(cat "$config" | jq -cr ".version.release")
-build=$(cat "$config" | jq -cr ".version.build")
+editors=$(from_config "Consortium.editor" --raw)
+for editor in $editors; do
+    if [ -d "$root/src/editor/$editor" ]; then
+        mkdir -p ".$editor"
+        cp -R "$root/src/editor/$editor/"* ".$editor/"
+    fi
+done
