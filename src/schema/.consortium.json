@@ -1,0 +1,15 @@
+{
+    "$schema": "schema.json",
+    "version": {
+        "revision": 0,
+        "patch": 0,
+        "draft": 4
+    },
+    "license": {
+        "year": "2022",
+        "licensor": {
+            "author": "Dwij Bavisi",
+            "mail": "dwijbavisi@gmail.com"
+        }
+    }
+}

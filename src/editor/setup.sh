@@ -10,7 +10,7 @@
 #//]: # ( See the License for the permissions and limitations.               {c)
 #//]: # ( ------------------------------------------------------------------ {c)
 
-editors=$(from_config "Consortium.editor" --raw)
+editors=$(from_config "editor" --raw)
 for editor in $editors; do
     if [ -d "$root/src/editor/$editor" ]; then
         mkdir -p ".$editor"

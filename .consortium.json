@@ -1,21 +1,37 @@
 {
-    "$schema": "src/schema.json",
+    "$schema": "src/schema/schema.json",
     "version": {
         "revision": 0,
         "patch": 0,
-        "draft": 3
+        "draft": 4
     },
-    "Consortium": {
-        "editor": [
-            "vscode"
-        ],
-        "root": "."
-    },
-    "TCsL2H": {
-        "year": 2022,
+    "editor": [
+        "vscode"
+    ],
+    "license": {
+        "year": "2022",
         "licensor": {
-            "name": "Dwij Bavisi",
-            "email": "dwijbavisi@gmail.com"
+            "author": "Dwij Bavisi",
+            "mail": "dwijbavisi@gmail.com"
+        }
+    },
+    "runners": {
+        "init": {
+            "scripts": [
+                "src/git/setup.sh",
+                "src/editor/setup.sh"
+            ]
+        },
+        "setup": {
+            "scripts": [
+                "src/editor/setup.sh"
+            ]
+        },
+        "build-schema": {
+            "scripts": [
+                "build/schema.sh",
+                "build/clean.sh"
+            ]
         }
     }
 }
