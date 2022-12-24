@@ -4,12 +4,15 @@ import os
 from os.path import exists, isfile
 import pickle
 
+
 def check_file(path, permission=os.R_OK):
     return exists(path) and isfile(path) and os.access(path, permission)
+
 
 def clean_cache(cache_path):
     if check_file(cache_path, os.W_OK):
         os.remove(cache_path)
+
 
 def load_data(config_path):
     cache_path = config_path + ".pickle"
@@ -27,6 +30,7 @@ def load_data(config_path):
                     pickle.dump(data, f)
     return data
 
+
 def deep_get(data, keys):
     for key in keys:
         try:
@@ -37,26 +41,37 @@ def deep_get(data, keys):
             return ""
     return data
 
+
+def print_list(items):
+    for item in items:
+        print_value(item)
+
+
 def print_value(value):
-    if args.raw:
-        if isinstance(value, list):
-            print(" ".join([str(x) for x in value]))
-        else:
-            print(json.dumps(value, separators=(",",":")))
+    if isinstance(value, (str, int, float, bool)):
+        print(value)
+    elif isinstance(value, list):
+        print_list(value)
     else:
-        print(json.dumps(value, separators=(",",":")))
+        print(json.dumps(value, separators=(",", ":")))
+
 
 def main():
     config_path = args.config
     cache_path = config_path + ".pickle"
 
-    if args.clean:
-        clean_cache(cache_path)
-
     if args.keys:
         data = load_data(config_path)
         value = deep_get(data, args.keys.split("."))
-        print_value(value)
+
+        if args.raw:
+            print_value(value)
+        else:
+            print(json.dumps(value, separators=(",", ":")))
+
+    if args.clean:
+        clean_cache(cache_path)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

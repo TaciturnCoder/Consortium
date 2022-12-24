@@ -40,16 +40,51 @@ if [ ! -f "$config" ]; then
     exit 1
 fi
 
+function ctm_extract() {
+    $python "$root/src/extract.py" "$@"
+}
+
 function from_config() {
-    $python "$root/src/extract.py" "$@" --config $config
+    ctm_extract "$@" --config $config
+}
+
+function ctm_config() {
+    ctm_extract "$@" --config "$root/.consortium.json"
 }
 
 case $action in
-setup)
-    . "$root/src/git/setup.sh"
-    . "$root/src/editor/setup.sh"
+run-*)
+    runner=$(echo "$action" | cut -d "-" -f 2-)
+    scripts=$(from_config --raw "runners.$runner.scripts")
+    parameters=$(from_config --raw "runners.$runner.parameters")
+
+    echo "[Consortium] Run $runner run!"
+    echo ""
+    for script in $scripts; do
+        if [ -f "$script" ]; then
+            . "$script" $parameters
+        else
+            echo "[Consortium] $script cannot walk"
+            echo ""
+        fi
+    done
     ;;
-*) ;;
+*)
+    runner=$action
+    scripts=$(ctm_config --raw "runners.$runner.scripts")
+    parameters=$(ctm_config --raw "runners.$runner.parameters")
+
+    echo "[Consortium] Run $runner run!"
+    echo ""
+    for script in $scripts; do
+        if [ -f "$root/$script" ]; then
+            . "$root/$script" $parameters
+        else
+            echo "[Consortium] $script cannot walk"
+            echo ""
+        fi
+    done
+    ;;
 esac
 
 $python "$root/src/extract.py" --clean --config $config
