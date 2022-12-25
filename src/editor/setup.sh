@@ -10,10 +10,11 @@
 #//]: # ( See the License for the permissions and limitations.               {c)
 #//]: # ( ------------------------------------------------------------------ {c)
 
-editors=$(from_config "editor" --raw)
+editors=$(ctm_global "editor" --raw)
+
 for editor in $editors; do
-    if [ -d "$root/src/editor/$editor" ]; then
-        mkdir -p ".$editor"
-        cp -R "$root/src/editor/$editor/"* ".$editor/"
+    if [ -d "$local_root/src/editor/$editor" ]; then
+        mkdir -p "$global_root/.$editor"
+        cp -R "$local_root/src/editor/$editor/"* "$global_root/.$editor/"
     fi
 done
