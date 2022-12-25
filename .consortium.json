@@ -20,18 +20,21 @@
             "scripts": [
                 "src/git/setup.sh",
                 "src/editor/setup.sh"
-            ]
+            ],
+            "root": ""
         },
         "setup": {
             "scripts": [
                 "src/editor/setup.sh"
-            ]
+            ],
+            "root": ""
         },
         "build-schema": {
             "scripts": [
                 "build/schema.sh",
                 "build/clean.sh"
-            ]
+            ],
+            "root": ""
         }
     }
 }

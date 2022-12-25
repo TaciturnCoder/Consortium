@@ -10,5 +10,5 @@
 #//]: # ( See the License for the permissions and limitations.               {c)
 #//]: # ( ------------------------------------------------------------------ {c)
 
-cp "$root/src/git/gitattributes" ".gitattributes"
-cp "$root/src/git/gitignore" ".gitignore"
+cp "$local_root/src/git/gitattributes" "$global_root/.gitattributes"
+cp "$local_root/src/git/gitignore" "$global_root/.gitignore"

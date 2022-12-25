@@ -20,72 +20,98 @@ if ! [ -x "$(command -v $python)" ]; then
     fi
 fi
 
-root=$(dirname "$0")
+global_root=$(pwd)
+ctm_root=$(dirname $(realpath "$global_root/$0"))
+local_root="$ctm_root"
 
-action=$1
-config=$2
+source "$ctm_root/src/api.sh"
+ctm_xargs=(
+    [action]="The action to perform."
+)
+ctm_xopts=(
+    [config]="The configuration file to use."
+)
+ctm_parse "$@"
 
-if [ -z "$action" ]; then
+if [ "${ctm_flgv[help]}" ]; then
+    ctm_help
+    exit 0
+fi
+
+if [ -z "${ctm_argv[action]}" ]; then
     echo "[Consortium] Speak action and Enter."
     echo ""
     exit 1
 fi
 
-if [ -z "$config" ]; then
-    config=".consortium.json"
+if [ -z "${ctm_optv[config]}" ]; then
+    ctm_optv[config]="$global_root/.consortium.json"
 fi
-if [ ! -f "$config" ]; then
-    echo "[Consortium] Operation succesful. \"$config\" died?"
+if ! [ -f "${ctm_optv[config]}" ]; then
+    echo "[Consortium] Operation succesful. \"${ctm_optv[config]}\" died?"
     echo ""
     exit 1
 fi
 
-function ctm_extract() {
-    $python "$root/src/extract.py" "$@"
+function ctm_global() {
+    ctm_extract "$@" --config "${ctm_optv[config]}"
+}
+function ctm_local() {
+    ctm_extract "$@" --config "$local_root/.consortium.json"
 }
 
-function from_config() {
-    ctm_extract "$@" --config $config
-}
+function ctm_run() {
+    local root="$1"
+    local runner="$2"
 
-function ctm_config() {
-    ctm_extract "$@" --config "$root/.consortium.json"
-}
+    scripts=$(ctm_$1 --raw "runners.$runner.scripts")
+    parameters=$(ctm_$1 --raw "runners.$runner.parameters")
+    local_=$(realpath "$global_root/$(ctm_$1 --raw "runners.$runner.root")")
 
-case $action in
-run-*)
-    runner=$(echo "$action" | cut -d "-" -f 2-)
-    scripts=$(from_config --raw "runners.$runner.scripts")
-    parameters=$(from_config --raw "runners.$runner.parameters")
+    declare -n path="${root}_root"
 
     echo "[Consortium] Run $runner run!"
     echo ""
-    for script in $scripts; do
-        if [ -f "$script" ]; then
-            . "$script" $parameters
-        else
-            echo "[Consortium] $script cannot walk"
-            echo ""
-        fi
-    done
+    $(
+        export global_root="$global_root"
+        export ctm_root="$ctm_root"
+        export local_root="$local_"
+        export -f ctm_global
+        export -f ctm_local
+
+        for script in $scripts; do
+            if [ -f "$path/$script" ]; then
+                source "$path/$script" $parameters
+            else
+                echo "[Consortium] $path/$script cannot walk"
+                echo ""
+            fi
+        done
+    )
+}
+
+case ${ctm_argv[action]} in
+run-*)
+    runner=${ctm_argv[action]#*run-}
+
+    if ! [ -z $(ctm_global --raw "runners.$runner") ]; then
+        ctm_run "global" "$runner"
+    else
+        echo "[Consortium] $runner is sleeping?"
+        echo ""
+    fi
     ;;
 *)
-    runner=$action
-    scripts=$(ctm_config --raw "runners.$runner.scripts")
-    parameters=$(ctm_config --raw "runners.$runner.parameters")
+    runner=${ctm_argv[action]}
 
-    echo "[Consortium] Run $runner run!"
-    echo ""
-    for script in $scripts; do
-        if [ -f "$root/$script" ]; then
-            . "$root/$script" $parameters
-        else
-            echo "[Consortium] $script cannot walk"
-            echo ""
-        fi
-    done
+    if ! [ -z $(ctm_local --raw "runners.$runner") ]; then
+        ctm_run "local" "$runner"
+    else
+        echo "[Consortium] $runner is sleeping?"
+        echo ""
+    fi
     ;;
 esac
 
-$python "$root/src/extract.py" --clean --config $config
+ctm_global --clean
 exit 0
