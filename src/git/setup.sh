@@ -12,3 +12,5 @@
 
 cp "$local_root/src/git/gitattributes" "$global_root/.gitattributes"
 cp "$local_root/src/git/gitignore" "$global_root/.gitignore"
+
+git config alias.tree "log --oneline --graph --decorate --all"
