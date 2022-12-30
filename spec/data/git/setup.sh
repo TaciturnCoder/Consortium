@@ -10,11 +10,7 @@
 #//]: # ( See the License for the permissions and limitations.               {c)
 #//]: # ( ------------------------------------------------------------------ {c)
 
-editors=$(ctm_global "editor" --raw)
+cp "$runner_root/spec/data/git/gitattributes" "$global_root/.gitattributes"
+cp "$runner_root/spec/data/git/gitignore" "$global_root/.gitignore"
 
-for editor in $editors; do
-    if [ -d "$local_root/src/editor/$editor" ]; then
-        mkdir -p "$global_root/.$editor"
-        cp -R "$local_root/src/editor/$editor/"* "$global_root/.$editor/"
-    fi
-done
+git config alias.tree "log --oneline --graph --decorate --all"

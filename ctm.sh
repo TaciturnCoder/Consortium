@@ -10,108 +10,142 @@
 #//]: # ( See the License for the permissions and limitations.               {c)
 #//]: # ( ------------------------------------------------------------------ {c)
 
-python="python"
-if ! [ -x "$(command -v $python)" ]; then
-    python="python3"
-    if ! [ -x "$(command -v $python)" ]; then
-        echo "[Consortium] \"python\" missing! Finding Nemo..."
+# Global variables
+global_root="$(pwd)"
+runner_root="$(realpath --relative-to="$global_root" "$(dirname "$0")")"
+data_root="$runner_root"
+
+# Import api files
+source "$runner_root/src/api/api.sh"
+ctm_api_init_
+ctm_api_init
+runner_root="$(ctm_root "$runner_root")"
+
+# Parse command line arguments
+ctm_argparse_parser
+
+ctm_argparse_add \
+    "help" \
+    --f \
+    --help "Print this help message and exit"
+ctm_argparse_add \
+    "action" \
+    --r \
+    --help "Action to be performed"
+ctm_argparse_add \
+    "config" \
+    --o \
+    --help "Path to configuration file"
+ctm_argparse_parse "$@"
+
+if [[ "${ctm_argflag[help]}" == "true" ]]; then
+    ctm_argparse_help
+    exit 0
+fi
+
+# Check if action is specified
+if [[ -z "${ctm_argreq[action]}" ]]; then
+    echo "[Consortium] Speak ACTION and enter!"
+    echo ""
+    ctm_argparse_help
+    exit 1
+fi
+
+# Check if config file is specified
+# else use default config file = ".consortium.json"
+if [[ -n "${ctm_argopt[config]}" ]]; then
+    config_file="${ctm_argopt[config]}"
+else
+    config_file=".consortium.json"
+fi
+data_root="$(ctm_root "$config_file")"
+
+# Check if config file exists
+if ! [ -f "$config_file" ]; then
+    if ! [[ "${ctm_argreq[action]}" = "init" ]]; then
+        echo "[Consortium] Operation succesful, '$config_file' died?"
         echo ""
+        ctm_argparse_help
         exit 1
     fi
 fi
 
-global_root=$(pwd)
-ctm_root=$(dirname $(realpath "$global_root/$0"))
-local_root="$ctm_root"
-
-source "$ctm_root/src/api.sh"
-ctm_xargs=(
-    [action]="The action to perform."
-)
-ctm_xopts=(
-    [config]="The configuration file to use."
-)
-ctm_parse "$@"
-
-if [ "${ctm_flgv[help]}" ]; then
-    ctm_help
-    exit 0
-fi
-
-if [ -z "${ctm_argv[action]}" ]; then
-    echo "[Consortium] Speak action and Enter."
-    echo ""
-    exit 1
-fi
-
-if [ -z "${ctm_optv[config]}" ]; then
-    ctm_optv[config]="$global_root/.consortium.json"
-fi
-if ! [ -f "${ctm_optv[config]}" ]; then
-    echo "[Consortium] Operation succesful. \"${ctm_optv[config]}\" died?"
-    echo ""
-    exit 1
-fi
-
-function ctm_global() {
-    ctm_extract "$@" --config "${ctm_optv[config]}"
-}
-function ctm_local() {
-    ctm_extract "$@" --config "$local_root/.consortium.json"
-}
-
+# Function to run "runner" in a secure subshell
+# Arguments:
+#   1. Function which extracts data from config file
+#   2. PWD for runner relative path
+#   3. Name of runner to read from config file
 function ctm_run() {
-    local root="$1"
-    local runner="$2"
+    local ctm_env="$1"
+    local -r root="$2"
+    local -r runner_name="$3"
 
-    scripts=$(ctm_$1 --raw "runners.$runner.scripts")
-    parameters=$(ctm_$1 --raw "runners.$runner.parameters")
-    local_=$(realpath "$global_root/$(ctm_$1 --raw "runners.$runner.root")")
+    # Get list of runner scripts and pwd directories
+    local -r script_list="$($ctm_env --raw --key "runners.$runner_name.scripts")"
+    local -r runner_runner_root="$($ctm_env --raw --key "runners.$runner_name.pwd")"
+    local -r runner_data_root="$($ctm_env --raw --key "runners.$runner_name.data")"
 
-    declare -n path="${root}_root"
-
-    echo "[Consortium] Run $runner run!"
+    echo "[Consortium] Run '$runner_name' run!"
     echo ""
-    $(
-        export global_root="$global_root"
-        export ctm_root="$ctm_root"
-        export local_root="$local_"
-        export -f ctm_global
-        export -f ctm_local
 
-        for script in $scripts; do
-            if [ -f "$path/$script" ]; then
-                source "$path/$script" $parameters
-            else
-                echo "[Consortium] $path/$script cannot walk"
+    # Run each script in a subshell
+    (
+        # If runner_runner_root is specified
+        if ! [ -z "$runner_runner_root" ]; then
+            export runner_root="$runner_runner_root"
+        else
+            export runner_root="$runner_root"
+        fi
+
+        # If runner_data_root is specified
+        if ! [ -z "$runner_data_root" ]; then
+            export data_root="$runner_data_root"
+        else
+            export data_root="$data_root"
+        fi
+
+        for script in $script_list; do
+            if ! [ -f "$root/$script" ]; then
+                echo "[Consortium] '$root/$script' cannot walk!"
                 echo ""
+                exit 1
+            else
+                source "$root/$script"
             fi
         done
     )
 }
 
-case ${ctm_argv[action]} in
+# Case action
+case "${ctm_argreq[action]}" in
+init)
+    # ctm_init
+    ;;
 run-*)
-    runner=${ctm_argv[action]#*run-}
+    runner_name=${ctm_argreq[action]#*run-}
 
-    if ! [ -z $(ctm_global --raw "runners.$runner") ]; then
-        ctm_run "global" "$runner"
+    # Check if runner exists
+    if ! [ -z $(ctm_envglobal --raw --key "runners.$runner_name") ]; then
+        ctm_run ctm_envglobal "$global_root" "$runner_name"
     else
-        echo "[Consortium] $runner is sleeping?"
+        echo "[Consortium] $runner_name is sleeping?"
         echo ""
     fi
     ;;
 *)
-    runner=${ctm_argv[action]}
+    runner_name=${ctm_argreq[action]}
 
-    if ! [ -z $(ctm_local --raw "runners.$runner") ]; then
-        ctm_run "local" "$runner"
+    # Check if runner exists
+    if ! [ -z $(ctm_envrunner --raw --key "runners.$runner_name") ]; then
+        ctm_run ctm_envrunner "$runner_root" "$runner_name"
     else
-        echo "[Consortium] $runner is sleeping?"
-        echo ""
+        ctm_argparse_help
+        exit 1
     fi
     ;;
 esac
 
-ctm_global --clean
+ctm_envglobal --clean
+ctm_envrunner --clean
+ctm_envdata --clean
 exit 0

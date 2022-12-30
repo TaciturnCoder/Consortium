@@ -1,3 +1,9 @@
+---
+layout: page
+title: About
+permalink: /about/
+---
+
 [//]: # ( ------------------------------------------------------------------ {c)
 [//]: # ( COPYRIGHT 2022 Dwij Bavisi <dwijbavisi@gmail.com>                  {c)
 [//]: # ( Licensed under:                                                    {c)

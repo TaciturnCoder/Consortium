@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #//]: # ( ------------------------------------------------------------------ {c)
 #//]: # ( COPYRIGHT 2022 Dwij Bavisi <dwijbavisi@gmail.com>                  {c)
 #//]: # ( Licensed under:                                                    {c)
@@ -8,13 +10,11 @@
 #//]: # ( See the License for the permissions and limitations.               {c)
 #//]: # ( ------------------------------------------------------------------ {c)
 
-.vscode
+editors=$(ctm_envglobal --raw --key "editor")
 
-# Jekyll
-_site
-.sass-cache
-.jekyll-cache
-.jekyll-metadata
-vendor
-
-.tmp
+for editor in $editors; do
+    if [ -d "$runner_root/spec/data/editor/$editor" ]; then
+        mkdir -p "$global_root/.$editor"
+        cp -R "$runner_root/spec/data/editor/$editor/"* "$global_root/.$editor/"
+    fi
+done

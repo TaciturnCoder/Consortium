@@ -10,13 +10,13 @@
 # //]: # ( See the License for the permissions and limitations.               {c)
 # //]: # ( ------------------------------------------------------------------ {c)
 
-output_dir="$runner_root/_docs/schema"
-input_dir="$runner_root/src/schema"
+echo "===> Running unit tests for configuration"
+echo "===> Running unit tests for configuration: read_json.py"
+python spec/tests/unit/configuration/driver_read_json.py
 
-mkdir -p "$output_dir"
+echo "===> Running unit tests for api"
+echo "===> Running unit tests for api: argparse.sh"
+bash spec/tests/unit/api/driver_argparse.sh
 
-_r=$(ctm_envdata --raw --key "version.revision")
-_p=$(ctm_envdata --raw --key "version.patch")
-_d=$(ctm_envdata --raw --key "version.draft")
-
-cp "$input_dir/schema.json" "$output_dir/$_r.$_p.$_d.json"
+echo "===> Running unit tests for api: root.sh"
+bash spec/tests/unit/api/driver_root.sh

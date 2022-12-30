@@ -8,10 +8,14 @@
 #//]: # ( See the License for the permissions and limitations.               {c)
 #//]: # ( ------------------------------------------------------------------ {c)
 
+# Code editors
 .vscode
 
-.tmp
+# Python
+__pycache__
+*.pickle
 
+# Jekyll
 _site
 .sass-cache
 .jekyll-cache
